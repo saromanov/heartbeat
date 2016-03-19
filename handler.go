@@ -10,5 +10,7 @@ type Handler struct {
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
-	
+	result, err := check.CheckHTTP()
+	http.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(health)
 }
