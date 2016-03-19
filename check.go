@@ -39,6 +39,10 @@ func (check*Check) Run() {
 	check.run()
 }
 
+func (check*Check) CheckHTTP() {
+	
+}
+
 func (check*Check) run(){
 	var wg sync.WaitGroup
 
