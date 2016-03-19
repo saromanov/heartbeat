@@ -6,8 +6,8 @@ import (
 )
 
 type Check struct {
-	httpCheck map[string]Item
-	scriptCheck map[string]Item
+	httpCheck []Item
+	scriptCheck []Item
 }
 
 func New()*Check {
@@ -23,7 +23,7 @@ func (check*Check) AddHTTPCheck(title, url string) {
 		status:"healthy",
 		target: url,
 	}
-	check.httpCheck[title] = url
+	check.httpCheck = append(check.httpCheck, newItem)
 }
 
 func (check*Check) AddScriptCheck(title, url) {
@@ -40,7 +40,7 @@ func (check*Check) Run() {
 }
 
 func (check*Check) CheckHTTP() {
-	
+
 }
 
 func (check*Check) run(){
