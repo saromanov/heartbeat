@@ -67,6 +67,11 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 	return json.Marshal(check.httpCheck)
 }
 
+// AddCluster provides
+func (check *Check) AddCluster(nodes []Node) {
+
+}
+
 func (check *Check) run() {
 	//var wg sync.WaitGroup
 
