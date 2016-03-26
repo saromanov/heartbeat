@@ -9,6 +9,11 @@ import (
 	//"sync"
 )
 
+var (
+	healthy   = "healthy"
+	unhealthy = "unhealthy"
+)
+
 type Check struct {
 	httpCheck   []Item
 	scriptCheck []Item
@@ -37,7 +42,7 @@ func (check *Check) AddScriptCheck(title, url string) {
 	newItem := Item{
 		title:     title,
 		checkType: "script",
-		status:    "healthy",
+		status:    healthy,
 		target:    url,
 	}
 	check.httpCheck = append(check.httpCheck, newItem)
@@ -51,13 +56,13 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 	for _, value := range check.httpCheck {
 		resp, err := check.checkItem(value.target)
 		if err != nil {
-			value.status = "unhealthy"
+			value.status = unhealthy
 			return []byte{}, errors.New(fmt.Sprintf("Unhealthy on %s", value.target))
 		} else {
-			value.status = "healthy"
+			value.status = healthy
 			contents, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				value.status = "unhealthy"
+				value.status = unhealthy
 			} else {
 				value.body = contents
 			}
