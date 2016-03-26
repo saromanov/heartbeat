@@ -12,12 +12,14 @@ import (
 type Check struct {
 	httpCheck   []Item
 	scriptCheck []Item
+	clusters    map[string][]Node
 }
 
 func New() *Check {
 	check := new(Check)
 	check.httpCheck = []Item{}
 	check.scriptCheck = []Item{}
+	check.clusters = map[string][]Node{}
 	return check
 }
 
@@ -68,8 +70,8 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 }
 
 // AddCluster provides
-func (check *Check) AddCluster(nodes []Node) {
-
+func (check *Check) AddCluster(name string, nodes []Node) {
+	check.clusters[name] = nodes
 }
 
 func (check *Check) run() {
@@ -97,4 +99,8 @@ func (check *Check) checkItem(target string) (*http.Response, error) {
 	}
 
 	return resp, nil
+}
+
+func (check *Check) checkCluster() error {
+	return nil
 }
