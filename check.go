@@ -74,6 +74,11 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 	return json.Marshal(check.httpCheck)
 }
 
+// Check Cluster provides checking all clusters
+func (check *Check) CheckCluster() error {
+	return check.checkClusters()
+}
+
 // AddCluster provides
 func (check *Check) AddCluster(name string, nodes []Node) {
 	check.clusters[name] = nodes
