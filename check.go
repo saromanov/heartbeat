@@ -79,6 +79,10 @@ func (check *Check) CheckClusters() error {
 	return check.checkClusters()
 }
 
+func (check *Check) Info() {
+
+}
+
 // AddCluster provides
 func (check *Check) AddCluster(name string, nodes []Node) {
 	check.clusters[name] = nodes
