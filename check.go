@@ -3,8 +3,9 @@ package heartbeat
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
-	"sync"
+	//"sync"
 )
 
 type Check struct {
@@ -48,6 +49,16 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 		resp, err := check.checkItem(value.target)
 		if err != nil {
 			value.status = "unhealthy"
+		} else {
+			value.status = "healthy"
+			contents, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				value.status = "unhealthy"
+			} else {
+				value.body = contents
+			}
+
+			resp.Body.Close()
 		}
 	}
 
@@ -55,7 +66,7 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 }
 
 func (check *Check) run() {
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
 
 	go func() {
 		for _, value := range check.httpCheck {

@@ -7,6 +7,7 @@ type Item struct {
 	target string  `json:"Target"`
 	status string  `json:"Status"`
 	statusCode int `json:"StatusCode"`
+	body  []byte `json:"Body"`
 }
 
 func (item*Item) Status() string{
