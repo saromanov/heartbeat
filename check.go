@@ -118,7 +118,7 @@ func (check *Check) checkClusters() error {
 		for _, node := range nodes {
 			_, err := check.checkItem(node.Url)
 			if err != nil {
-				unhealthyNodes += 1
+				unhealthyNodes++
 			}
 		}
 
