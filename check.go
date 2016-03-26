@@ -75,7 +75,7 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 }
 
 // Check Cluster provides checking all clusters
-func (check *Check) CheckCluster() error {
+func (check *Check) CheckClusters() error {
 	return check.checkClusters()
 }
 
