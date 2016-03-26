@@ -79,8 +79,12 @@ func (check *Check) CheckClusters() error {
 	return check.checkClusters()
 }
 
-func (check *Check) Info() {
-
+// Info return information about current checks
+func (check *Check) Info() *Info {
+	return &Info{
+		NumClusters:   len(check.clusters),
+		NumHttpChecks: len(check.httpCheck),
+	}
 }
 
 // AddCluster provides
