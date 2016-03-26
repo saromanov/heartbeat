@@ -112,13 +112,20 @@ func (check *Check) checkItem(target string) (*http.Response, error) {
 }
 
 func (check *Check) checkClusters() error {
-	for _, nodes := range check.clusters {
+	totalNodes := len(check.clusters)
+	for title, nodes := range check.clusters {
+		unhealthyNodes := 0
 		for _, node := range nodes {
 			_, err := check.checkItem(node.Url)
 			if err != nil {
-				return errors.New(fmt.Sprintf("Cluster %s is unhealthy", node.Title))
+				unhealthyNodes += 1
 			}
 		}
+
+		if unhealthyNodes != 0 {
+			return errors.New(fmt.Sprintf("Cluster %s is unhealthy. %d nodes from %d is unhealthy", title, unhealthyNodes, totalNodes))
+		}
 	}
+
 	return nil
 }
