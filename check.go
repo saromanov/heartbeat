@@ -3,6 +3,7 @@ package heartbeat
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	//"sync"
@@ -49,6 +50,7 @@ func (check *Check) CheckHTTP() ([]byte, error) {
 		resp, err := check.checkItem(value.target)
 		if err != nil {
 			value.status = "unhealthy"
+			return []byte{}, errors.New(fmt.Sprintf("Unhealthy on %s", value.target))
 		} else {
 			value.status = "healthy"
 			contents, err := ioutil.ReadAll(resp.Body)
