@@ -106,6 +106,14 @@ func (check *Check) checkItem(target string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (check *Check) checkCluster() error {
+func (check *Check) checkClusters() error {
+	for _, nodes := range check.clusters {
+		for _, node := range nodes {
+			_, err := check.checkItem(node.Url)
+			if err != nil {
+				return errors.New(fmt.Sprintf("Cluster %s is unhealthy", node.Title))
+			}
+		}
+	}
 	return nil
 }
