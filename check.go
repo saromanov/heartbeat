@@ -16,6 +16,7 @@ var (
 
 type Check struct {
 	httpCheck   []Item
+	httpCheckMap map[string]Item
 	scriptCheck []Item
 	clusters    map[string][]Node
 }
@@ -25,6 +26,7 @@ func New() *Check {
 	check.httpCheck = []Item{}
 	check.scriptCheck = []Item{}
 	check.clusters = map[string][]Node{}
+	check.httpCheckMap = map[string]Item{}
 	return check
 }
 
@@ -35,7 +37,21 @@ func (check *Check) AddHTTPCheck(title, url string) {
 		status:    "healthy",
 		target:    url,
 	}
+	check.httpCheckMap[title] = newItem
 	check.httpCheck = append(check.httpCheck, newItem)
+}
+
+func (check *Check) ApplyCheck(title string) error {
+	item, ok := check.httpCheckMap[title]
+	if !ok {
+		return fmt.Errorf("Item %s is not found", title)
+	}
+
+	_, err := check.checkItem(item.target)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (check *Check) AddScriptCheck(title, url string) {
@@ -99,6 +115,7 @@ func (check *Check) run() {
 		for _, value := range check.httpCheck {
 			_, err := check.checkItem(value.target)
 			if err != nil {
+				// It seems, that item is unhealty
 
 			}
 
