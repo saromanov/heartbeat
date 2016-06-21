@@ -67,7 +67,8 @@ func (check *Check) Run() {
 	check.run()
 }
 
-// CheckHTTP method for checking health by http
+// CheckHTTP method for checking health over registered http endpoints
+// Return struct of results
 func (check *Check) CheckHTTP() ([]byte, error) {
 	for _, value := range check.httpCheck {
 		resp, err := check.checkItem(value.target)
