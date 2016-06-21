@@ -34,7 +34,7 @@ func (check *Check) AddHTTPCheck(title, url string) {
 	newItem := Item{
 		title:     title,
 		checkType: "http",
-		status:    "healthy",
+		status:    healthy,
 		target:    url,
 	}
 	check.httpCheckMap[title] = newItem
