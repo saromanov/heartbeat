@@ -19,3 +19,7 @@ func (h* Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
 }
+
+func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
+	
+}

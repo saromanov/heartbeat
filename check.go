@@ -1,7 +1,7 @@
 package heartbeat
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -69,26 +69,29 @@ func (check *Check) Run() {
 
 // CheckHTTP method for checking health over registered http endpoints
 // Return struct of results
-func (check *Check) CheckHTTP() ([]byte, error) {
+func (check *Check) CheckHTTP() (*HTTPReport, error) {
+	items:= make([]HTTPItem, len(check.httpCheck))
 	for _, value := range check.httpCheck {
 		resp, err := check.checkItem(value.target)
 		if err != nil {
 			value.status = unhealthy
-			return []byte{}, errors.New(fmt.Sprintf("Unhealthy on %s", value.target))
+			items = append(items, HTTPItem{Name: value.title, StatusCode: resp.Status, Status:"down"})
 		} else {
 			value.status = healthy
 			contents, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
+				items = append(items, HTTPItem{Name: value.title, StatusCode: resp.Status, Status:"down"})
 				value.status = unhealthy
 			} else {
 				value.body = contents
+				items = append(items, HTTPItem{Name: value.title, StatusCode: resp.Status, Status:"up"})
 			}
 
 			resp.Body.Close()
 		}
 	}
 
-	return json.Marshal(check.httpCheck)
+	return &HTTPReport{Items: items}, nil
 }
 
 // Check Cluster provides checking all clusters
