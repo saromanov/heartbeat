@@ -4,8 +4,11 @@ import (
 	//"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/fatih/color"
 	//"sync"
 )
 
@@ -75,7 +78,7 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 		resp, err := check.checkItem(value.target)
 		if err != nil {
 			value.status = unhealthy
-			items = append(items, HTTPItem{Name: value.title, StatusCode: resp.Status, Status:"down"})
+			items = append(items, HTTPItem{Name: value.title, Error: err.Error(), Status:"down"})
 		} else {
 			value.status = healthy
 			contents, err := ioutil.ReadAll(resp.Body)
@@ -92,6 +95,22 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 	}
 
 	return &HTTPReport{Items: items}, nil
+}
+
+// Report provides output info to console
+func (check *Check) Report() {
+	items, err := check.CheckHTTP()
+	if err != nil {
+		log.Fatal(fmt.Errorf("%v", err))
+	}
+
+	for _, item := range items.Items {
+		if item.Status == "down" {
+			color.Red(item.Name)
+		} else{
+			color.Green(item.Name)
+		}
+	}
 }
 
 // Check Cluster provides checking all clusters
