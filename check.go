@@ -2,6 +2,7 @@ package heartbeat
 
 import (
 	//"encoding/json"
+	"time"
 	"errors"
 	"fmt"
 	"log"
@@ -114,6 +115,13 @@ func (check *Check) Report() {
 		} else{
 			color.Green(item.Name)
 		}
+	}
+}
+
+func (check *Check) Checking(interval int32) {
+	for {
+		time.Sleep(time.Duration(interval) * time.Minute)
+		check.Report()
 	}
 }
 
