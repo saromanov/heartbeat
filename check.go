@@ -109,6 +109,7 @@ func (check *Check) Report() {
 		log.Fatal(fmt.Errorf("%v", err))
 	}
 
+	fmt.Println("Current time: ", time.Now())
 	for _, item := range items.Items {
 		if item.Status == "down" {
 			color.Red(item.Name)
