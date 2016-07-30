@@ -13,5 +13,6 @@ type HTTPItem struct {
 	StatusCode string `json:"statusCode"`
 	Time   *time.Time `json:"time"`
 	Error  string `json:"error"`
+	Url    string `json:"url"`
 	Tags   []string `json:"tags"`
 }
