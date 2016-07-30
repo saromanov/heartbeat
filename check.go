@@ -17,9 +17,13 @@ var (
 	unhealthy = "unhealthy"
 )
 
+// Check provides a basic struct for checking
 type Check struct {
+	// list of the http checks
 	httpCheck   []Item
+	// dict of http checks
 	httpCheckMap map[string]Item
+	// list of the scipt checks
 	scriptCheck []Item
 	clusters    map[string][]Node
 }
