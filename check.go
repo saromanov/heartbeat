@@ -1,16 +1,14 @@
 package heartbeat
 
 import (
-	//"encoding/json"
-	"time"
 	"errors"
 	"fmt"
-	"log"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/fatih/color"
-	//"sync"
 )
 
 var (
@@ -21,7 +19,7 @@ var (
 // Check provides a basic struct for checking
 type Check struct {
 	// list of the http checks
-	httpCheck   []Item
+	httpCheck []Item
 	// dict of http checks
 	httpCheckMap map[string]Item
 	// list of the scipt checks
@@ -29,15 +27,17 @@ type Check struct {
 	clusters    map[string][]Node
 }
 
+// New provides initialization of the project
 func New() *Check {
-	check := new(Check)
-	check.httpCheck = []Item{}
-	check.scriptCheck = []Item{}
-	check.clusters = map[string][]Node{}
-	check.httpCheckMap = map[string]Item{}
-	return check
+	return &Check{
+		httpCheck:    []Item{},
+		scriptCheck:  []Item{},
+		clusters:     map[string][]Node{},
+		httpCheckMap: map[string]Item{},
+	}
 }
 
+// AddHTTPCheck provides adding of HTTP check
 func (check *Check) AddHTTPCheck(title, url string) {
 	newItem := Item{
 		title:     title,
@@ -49,6 +49,7 @@ func (check *Check) AddHTTPCheck(title, url string) {
 	check.httpCheck = append(check.httpCheck, newItem)
 }
 
+// ApplyCheck provides applying of the check
 func (check *Check) ApplyCheck(title string) error {
 	item, ok := check.httpCheckMap[title]
 	if !ok {
@@ -78,21 +79,21 @@ func (check *Check) Run() {
 // CheckHTTP method for checking health over registered http endpoints
 // Return struct of results
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
-	items:= make([]HTTPItem, len(check.httpCheck))
+	items := make([]HTTPItem, len(check.httpCheck))
 	for _, value := range check.httpCheck {
 		resp, err := check.checkItem(value.target)
 		if err != nil {
 			value.status = unhealthy
-			items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status:"down"})
+			items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
 		} else {
 			value.status = healthy
 			contents, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status:"down"})
+				items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "down"})
 				value.status = unhealthy
 			} else {
 				value.body = contents
-				items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status:"up"})
+				items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "up"})
 			}
 
 			resp.Body.Close()
@@ -113,7 +114,7 @@ func (check *Check) Report() {
 	for _, item := range items.Items {
 		if item.Status == "down" {
 			color.Red(fmt.Sprintf("%s - %s", item.Name, item.Url))
-		} else{
+		} else {
 			color.Green(fmt.Sprintf("%s - %s", item.Name, item.Url))
 		}
 	}
