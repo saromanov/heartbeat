@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/saromanov/heartbeat"
 )
@@ -9,9 +9,5 @@ import (
 func main() {
 	h := heartbeat.New()
 	h.AddHTTPCheck("some", "https://github.com")
-	r, err := h.CheckHTTP()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(r)
+	h.Run(1 * time.Second)
 }

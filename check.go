@@ -74,11 +74,6 @@ func (check *Check) AddScriptCheck(title, url string) {
 	check.httpCheck = append(check.httpCheck, newItem)
 }
 
-// Run provides running of the checks
-func (check *Check) Run() {
-	check.run()
-}
-
 // CheckHTTP method for checking health over registered http endpoints
 // Return struct of results
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
@@ -113,7 +108,7 @@ func (check *Check) Report() {
 		log.Fatal(fmt.Errorf("%v", err))
 	}
 
-	fmt.Println("Current time: ", time.Now())
+	fmt.Println("Current time: ", time.Now().Format(time.RFC3339))
 	for _, item := range items.Items {
 		if item.Status == "down" {
 			color.Red("%s - %s", item.Name, item.Url)
@@ -123,10 +118,10 @@ func (check *Check) Report() {
 	}
 }
 
-// Checking provides checking of the data
-func (check *Check) Checking(interval int32) {
+// Run provides checking
+func (check *Check) Run(d time.Duration) {
 	for {
-		time.Sleep(time.Duration(interval) * time.Minute)
+		time.Sleep(d)
 		check.Report()
 	}
 }
