@@ -1,16 +1,14 @@
 package heartbeat
 
-
 type Item struct {
-	title  string  `json:"Title"`
-	checkType   string `json:"CheckType"`
-	target string  `json:"Target"`
-	status string  `json:"Status"`
-	statusCode int `json:"StatusCode"`
-	body  []byte `json:"Body"`
+	title      string `json:"title"`
+	checkType  string `json:"checkType"`
+	target     string `json:"target"`
+	status     string `json:"status"`
+	statusCode int    `json:"statusCode"`
+	body       []byte `json:"body"`
 }
 
-func (item*Item) Status() string{
+func (item *Item) Status() string {
 	return item.status
 }
-

@@ -88,19 +88,19 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 		if err != nil {
 			value.status = unhealthy
 			items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
-		} else {
-			value.status = healthy
-			contents, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "down"})
-				value.status = unhealthy
-			} else {
-				value.body = contents
-				items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "up"})
-			}
-
-			resp.Body.Close()
+			continue
 		}
+		value.status = healthy
+		contents, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "down"})
+			value.status = unhealthy
+		} else {
+			value.body = contents
+			items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "up"})
+		}
+
+		resp.Body.Close()
 	}
 
 	return &HTTPReport{Items: items}, nil
@@ -116,9 +116,9 @@ func (check *Check) Report() {
 	fmt.Println("Current time: ", time.Now())
 	for _, item := range items.Items {
 		if item.Status == "down" {
-			color.Red(fmt.Sprintf("%s - %s", item.Name, item.Url))
+			color.Red("%s - %s", item.Name, item.Url)
 		} else {
-			color.Green(fmt.Sprintf("%s - %s", item.Name, item.Url))
+			color.Green("%s - %s", item.Name, item.Url)
 		}
 	}
 }
@@ -170,7 +170,7 @@ func (check *Check) checkItem(target string) (*http.Response, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode > 400 {
+	if resp.StatusCode >= 400 {
 		return resp, errors.New("Unhealthy")
 	}
 
@@ -189,7 +189,7 @@ func (check *Check) checkClusters() error {
 		}
 
 		if unhealthyNodes != 0 {
-			return errors.New(fmt.Sprintf("Cluster %s is unhealthy. %d nodes from %d is unhealthy", title, unhealthyNodes, totalNodes))
+			return fmt.Errorf("Cluster %s is unhealthy. %d nodes from %d is unhealthy", title, unhealthyNodes, totalNodes)
 		}
 	}
 
