@@ -63,6 +63,7 @@ func (check *Check) ApplyCheck(title string) error {
 	return nil
 }
 
+// AddScriptCheck provides adding script check
 func (check *Check) AddScriptCheck(title, url string) {
 	newItem := Item{
 		title:     title,
@@ -72,6 +73,8 @@ func (check *Check) AddScriptCheck(title, url string) {
 	}
 	check.httpCheck = append(check.httpCheck, newItem)
 }
+
+// Run provides running of the checks
 func (check *Check) Run() {
 	check.run()
 }
@@ -120,6 +123,7 @@ func (check *Check) Report() {
 	}
 }
 
+// Checking provides checking of the data
 func (check *Check) Checking(interval int32) {
 	for {
 		time.Sleep(time.Duration(interval) * time.Minute)
@@ -127,7 +131,7 @@ func (check *Check) Checking(interval int32) {
 	}
 }
 
-// Check Cluster provides checking all clusters
+// CheckClusters provides checking all clusters
 func (check *Check) CheckClusters() error {
 	return check.checkClusters()
 }
