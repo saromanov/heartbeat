@@ -33,6 +33,17 @@ type HTTPCheck struct {
 	URL   string
 }
 
+// Validate provides validating of request
+func (h HTTPCheck) Validate() error {
+	if h.Title == "" {
+		return fmt.Errorf("title is not defined")
+	}
+	if h.URL == "" {
+		return fmt.Errorf("url is not defined")
+	}
+	return nil
+}
+
 // New provides initialization of the project
 func New() *Check {
 	return &Check{
@@ -44,14 +55,17 @@ func New() *Check {
 }
 
 // AddHTTPCheck provides adding of HTTP check
-func (check *Check) AddHTTPCheck(title, url string) {
+func (check *Check) AddHTTPCheck(c HTTPCheck) {
+	if err := c.Validate(); err != nil {
+		panic(err)
+	}
 	newItem := Item{
-		title:     title,
+		title:     c.Title,
 		checkType: "http",
 		status:    healthy,
-		target:    url,
+		target:    c.URL,
 	}
-	check.httpCheckMap[title] = newItem
+	check.httpCheckMap[c.Title] = newItem
 	check.httpCheck = append(check.httpCheck, newItem)
 }
 
@@ -70,12 +84,12 @@ func (check *Check) ApplyCheck(title string) error {
 }
 
 // AddScriptCheck provides adding script check
-func (check *Check) AddScriptCheck(c HTTPCheck) {
+func (check *Check) AddScriptCheck(title, url string) {
 	newItem := Item{
-		title:     c.Title,
+		title:     title,
 		checkType: "script",
 		status:    healthy,
-		target:    c.URL,
+		target:    url,
 	}
 	check.httpCheck = append(check.httpCheck, newItem)
 }
