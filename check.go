@@ -27,6 +27,12 @@ type Check struct {
 	clusters    map[string][]Node
 }
 
+// HTTPCheck defines check for http
+type HTTPCheck struct {
+	Title string
+	URL   string
+}
+
 // New provides initialization of the project
 func New() *Check {
 	return &Check{
@@ -64,12 +70,12 @@ func (check *Check) ApplyCheck(title string) error {
 }
 
 // AddScriptCheck provides adding script check
-func (check *Check) AddScriptCheck(title, url string) {
+func (check *Check) AddScriptCheck(c HTTPCheck) {
 	newItem := Item{
-		title:     title,
+		title:     c.Title,
 		checkType: "script",
 		status:    healthy,
-		target:    url,
+		target:    c.URL,
 	}
 	check.httpCheck = append(check.httpCheck, newItem)
 }
@@ -108,7 +114,7 @@ func (check *Check) Report() {
 		log.Fatal(fmt.Errorf("%v", err))
 	}
 
-	fmt.Println("Current time: ", time.Now().Format(time.RFC3339))
+	color.Red("Current time %s", time.Now().Format(time.RFC3339))
 	for _, item := range items.Items {
 		if item.Status == "down" {
 			color.Red("%s - %s", item.Name, item.Url)
