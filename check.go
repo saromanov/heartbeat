@@ -55,9 +55,9 @@ func New() *Check {
 }
 
 // AddHTTPCheck provides adding of HTTP check
-func (check *Check) AddHTTPCheck(c HTTPCheck) {
+func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 	if err := c.Validate(); err != nil {
-		panic(err)
+		return err
 	}
 	newItem := Item{
 		title:     c.Title,
@@ -67,6 +67,7 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) {
 	}
 	check.httpCheckMap[c.Title] = newItem
 	check.httpCheck = append(check.httpCheck, newItem)
+	return nil
 }
 
 // ApplyCheck provides applying of the check
