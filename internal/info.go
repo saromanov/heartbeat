@@ -1,9 +1,9 @@
-package heartbeat
+package internal
 
 // Info return basic information about system
 type Info struct {
-	NumClusters int
-	NumUnhealthy int
-	NumHttpChecks int
+	NumClusters     int
+	NumUnhealthy    int
+	NumHttpChecks   int
 	NumScriptChecks int
 }

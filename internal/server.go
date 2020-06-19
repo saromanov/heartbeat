@@ -1,4 +1,4 @@
-package heartbeat
+package internal
 
 import (
 	"encoding/json"
@@ -18,7 +18,8 @@ func report(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
-func makeServer() {
+// MakeServer provides creating of the server
+func MakeServer() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", report)
 	log.Fatal(http.ListenAndServe(":8080", mux))

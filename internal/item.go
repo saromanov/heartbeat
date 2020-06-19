@@ -1,4 +1,4 @@
-package heartbeat
+package internal
 
 type Item struct {
 	title      string `json:"title"`
