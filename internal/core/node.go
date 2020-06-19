@@ -1,4 +1,4 @@
-package internal
+package core
 
 type Node struct {
 	Title string

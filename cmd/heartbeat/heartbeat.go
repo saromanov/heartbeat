@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/saromanov/heartbeat/internal"
+	"github.com/saromanov/heartbeat/internal/server"
 )
 
 func main() {
-	internal.MakeServer()
+	server.Run()
 }

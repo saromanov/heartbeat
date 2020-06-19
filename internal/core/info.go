@@ -1,4 +1,4 @@
-package internal
+package core
 
 // Info return basic information about system
 type Info struct {
