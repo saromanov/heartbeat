@@ -2,6 +2,7 @@ package heartbeat
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -18,5 +19,7 @@ func report(w http.ResponseWriter, r *http.Request) {
 }
 
 func makeServer() {
-
+	mux := http.NewServeMux()
+	mux.HandleFunc("/status", report)
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
