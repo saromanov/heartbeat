@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/saromanov/heartbeat/internal/core"
+	"github.com/saromanov/heartbeat/api"
 )
 
 // Server defines server logic
 type Server struct {
-	check *core.Check
+	check *api.Heartbeat
 }
 
 func (s *Server) report(w http.ResponseWriter, r *http.Request) {
@@ -26,17 +26,13 @@ type Response struct {
 	URL string `json:"url"`
 }
 
-func runHeartbeat() {
-	hb := core.New()
-	hb.Run(1 * time.Second)
-}
-
 // Run starting of the server
 func Run() {
-	hb := core.New()
-	hb.Run(1 * time.Second)
-	s := &Server{}
-	go runHeartbeat()
+	hb := api.New()
+	go hb.Run(1 * time.Second)
+	s := &Server{
+		check: hb,
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", s.report)
 	log.Fatal(http.ListenAndServe(":8100", mux))
