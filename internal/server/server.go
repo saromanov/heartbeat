@@ -9,16 +9,20 @@ import (
 	"github.com/saromanov/heartbeat/internal/core"
 )
 
-// Response provides writing of response from endpoint
-type Response struct {
-	URL string `json:"url"`
+// Server defines server logic
+type Server struct {
 }
 
-func report(w http.ResponseWriter, r *http.Request) {
+func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	result, _ := json.Marshal(Response{})
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
+}
+
+// Response provides writing of response from endpoint
+type Response struct {
+	URL string `json:"url"`
 }
 
 func runHeartbeat() {
