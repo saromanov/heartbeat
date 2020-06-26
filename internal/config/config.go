@@ -19,6 +19,11 @@ type Check struct {
 	URL  string `yaml:"url"`
 }
 
+// Unmarshal provides unmarshaling of the config
 func Unmarshal(path string) (*Config, error) {
-	cowrow.LoadByPath(path)
+	var c *Config
+	if err := cowrow.LoadByPath(path, &c); err != nil {
+		return nil, err
+	}
+	return c, nil
 }
