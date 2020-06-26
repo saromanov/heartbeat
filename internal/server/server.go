@@ -28,6 +28,9 @@ type Response struct {
 
 // Run starting of the server
 func Run(cfg *config.Config) {
+	if cfg == nil {
+		panic("config is not defined")
+	}
 	hb := api.New()
 	go hb.Run(cfg.Duration)
 	s := &Server{
