@@ -2,4 +2,7 @@ module github.com/saromanov/heartbeat
 
 go 1.14
 
-require github.com/fatih/color v1.9.0
+require (
+	github.com/fatih/color v1.9.0
+	github.com/saromanov/cowrow v0.0.0-20200409190230-745380e3c39c
+)

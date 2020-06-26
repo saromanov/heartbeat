@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/saromanov/heartbeat/api"
+	"github.com/saromanov/heartbeat/internal/config"
 )
 
 // Server defines server logic
@@ -27,9 +27,9 @@ type Response struct {
 }
 
 // Run starting of the server
-func Run() {
+func Run(cfg *config.Config) {
 	hb := api.New()
-	go hb.Run(1 * time.Second)
+	go hb.Run(cfg.Duration)
 	s := &Server{
 		check: hb,
 	}

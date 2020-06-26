@@ -27,3 +27,10 @@ func Unmarshal(path string) (*Config, error) {
 	}
 	return c, nil
 }
+
+// Default return default config in the case of config path is not defined
+func Default() *Config {
+	return &Config{
+		Duration: 1 * time.Second,
+	}
+}
