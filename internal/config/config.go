@@ -33,5 +33,15 @@ func Default() *Config {
 	return &Config{
 		Duration: 1 * time.Second,
 		Address:  ":8100",
+		Checks: []Check{
+			{
+				Name: "github",
+				URL:  "https://github.com/",
+			},
+			{
+				Name: "ya",
+				URL:  "https://ya.ru",
+			},
+		},
 	}
 }

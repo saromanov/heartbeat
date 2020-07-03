@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/fatih/color"
@@ -18,6 +19,7 @@ var (
 
 // Check provides a basic struct for checking
 type Check struct {
+	mu sync.RWMutex
 	// list of the http checks
 	httpCheck []Item
 	// dict of http checks
@@ -53,6 +55,7 @@ func New() *Check {
 		clusters:     map[string][]Node{},
 		httpCheckMap: map[string]Item{},
 		stats:        map[int]Stats{},
+		mu:           sync.RWMutex{},
 	}
 }
 
@@ -61,12 +64,16 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 	if err := c.Validate(); err != nil {
 		return err
 	}
+	id := len(check.httpCheck) + 1
 	newItem := Item{
-		id:        len(check.httpCheck) + 1,
+		id:        id,
 		title:     c.Title,
 		checkType: "http",
 		status:    healthy,
 		target:    c.URL,
+	}
+	check.stats[id] = Stats{
+		URL: c.URL,
 	}
 	check.httpCheckMap[c.Title] = newItem
 	check.httpCheck = append(check.httpCheck, newItem)
@@ -103,18 +110,15 @@ func (check *Check) AddScriptCheck(title, url string) {
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
 	items := make([]HTTPItem, len(check.httpCheck))
 	for _, value := range check.httpCheck {
-		ctx, _ := context.WithTimeout(context.Background(), 2*time.Millisecond)
+		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		done := make(chan struct{})
-		go func() {
+		go func(id int) {
+			check.mu.Lock()
 			defer func() {
+				check.mu.Unlock()
 				done <- struct{}{}
 			}()
-			stats, ok := check.stats[value.id]
-			if !ok {
-				check.stats[value.id] = Stats{
-					URL: value.target,
-				}
-			}
+			stats, _ := check.stats[value.id]
 			resp, err := check.checkItem(value.target)
 			if err != nil {
 				value.status = unhealthy
@@ -122,20 +126,23 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 				items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
 				return
 			}
+			stats.Completed++
+			check.stats[id] = stats
 			value.status = healthy
-			check.stats[value.id] = stats
 			resp.Body.Close()
-		}()
+		}(value.id)
 
-		go func() {
+		go func(id int) {
 			select {
 			case <-done:
-				fmt.Println("Completed")
+				stats, _ := check.stats[id]
+				stats.Completed++
+				check.stats[id] = stats
 			case <-ctx.Done():
 				fmt.Println("DONE")
 				return
 			}
-		}()
+		}(value.id)
 	}
 
 	return &HTTPReport{Items: items}, nil
