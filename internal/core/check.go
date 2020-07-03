@@ -24,7 +24,7 @@ type Check struct {
 	httpCheckMap map[string]Item
 	// list of the scipt checks
 	scriptCheck []Item
-	stats       map[string]Stats
+	stats       map[int]Stats
 	clusters    map[string][]Node
 }
 
@@ -52,7 +52,7 @@ func New() *Check {
 		scriptCheck:  []Item{},
 		clusters:     map[string][]Node{},
 		httpCheckMap: map[string]Item{},
-		stats:        map[string]Stats{},
+		stats:        map[int]Stats{},
 	}
 }
 
@@ -103,23 +103,32 @@ func (check *Check) AddScriptCheck(title, url string) {
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
 	items := make([]HTTPItem, len(check.httpCheck))
 	for _, value := range check.httpCheck {
+		stats, ok := check.stats[value.id]
+		if !ok {
+			check.stats[value.id] = Stats{
+				URL: value.target,
+			}
+		}
 		resp, err := check.checkItem(value.target)
 		if err != nil {
 			value.status = unhealthy
-
+			stats.Failed++
 			items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
 			continue
 		}
 		value.status = healthy
 		contents, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
+			stats.Failed++
 			items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "down"})
 			value.status = unhealthy
 		} else {
+			stats.Completed++
 			value.body = contents
 			items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "up"})
 		}
 
+		check.stats[value.id] = stats
 		resp.Body.Close()
 	}
 
@@ -143,8 +152,9 @@ func (check *Check) Report() {
 	}
 }
 
-func (check *Check) Stats() {
-
+// Stats returns statistics for all endpoints
+func (check *Check) Stats() map[int]Stats {
+	return check.stats
 }
 
 // Run provides checking
@@ -171,21 +181,6 @@ func (check *Check) Info() *Info {
 // AddCluster provides
 func (check *Check) AddCluster(name string, nodes []Node) {
 	check.clusters[name] = nodes
-}
-
-func (check *Check) run() {
-	//var wg sync.WaitGroup
-
-	go func() {
-		for _, value := range check.httpCheck {
-			_, err := check.checkItem(value.target)
-			if err != nil {
-				// It seems, that item is unhealty
-
-			}
-
-		}
-	}()
 }
 
 func (check *Check) checkItem(target string) (*http.Response, error) {

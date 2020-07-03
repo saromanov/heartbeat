@@ -18,7 +18,8 @@ type Server struct {
 
 func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	result, err := json.Marshal(Response{})
+	stats := s.check.Stats()
+	result, err := json.Marshal(stats)
 	if err != nil {
 		log.WithError(err).Errorf("unable to marshal json")
 		return

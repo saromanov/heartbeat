@@ -30,3 +30,8 @@ func (h *Heartbeat) AddCheck(title, url string) error {
 func (h *Heartbeat) Run(d time.Duration) {
 	h.check.Run(d)
 }
+
+// Stats return stats for all registered endpoints
+func (h *Heartbeat) Stats() map[int]core.Stats {
+	return h.check.Stats()
+}
