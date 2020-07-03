@@ -24,6 +24,7 @@ type Check struct {
 	httpCheckMap map[string]Item
 	// list of the scipt checks
 	scriptCheck []Item
+	stats       map[string]Stats
 	clusters    map[string][]Node
 }
 
@@ -51,6 +52,7 @@ func New() *Check {
 		scriptCheck:  []Item{},
 		clusters:     map[string][]Node{},
 		httpCheckMap: map[string]Item{},
+		stats:        map[string]Stats{},
 	}
 }
 
@@ -60,6 +62,7 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 		return err
 	}
 	newItem := Item{
+		id:        len(check.httpCheck) + 1,
 		title:     c.Title,
 		checkType: "http",
 		status:    healthy,
@@ -103,6 +106,7 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 		resp, err := check.checkItem(value.target)
 		if err != nil {
 			value.status = unhealthy
+
 			items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
 			continue
 		}
@@ -137,6 +141,10 @@ func (check *Check) Report() {
 			color.Green("%s - %s", item.Name, item.Url)
 		}
 	}
+}
+
+func (check *Check) Stats() {
+
 }
 
 // Run provides checking

@@ -1,6 +1,7 @@
 package core
 
 type Item struct {
+	id         int    `json:"id"`
 	title      string `json:"title"`
 	checkType  string `json:"checkType"`
 	target     string `json:"target"`
