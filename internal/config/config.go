@@ -32,5 +32,6 @@ func Unmarshal(path string) (*Config, error) {
 func Default() *Config {
 	return &Config{
 		Duration: 1 * time.Second,
+		Address:  ":8100",
 	}
 }

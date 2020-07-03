@@ -2,11 +2,11 @@ package server
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/saromanov/heartbeat/api"
 	"github.com/saromanov/heartbeat/internal/config"
+	log "github.com/sirupsen/logrus"
 )
 
 // Server defines server logic
@@ -16,7 +16,11 @@ type Server struct {
 
 func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	result, _ := json.Marshal(Response{})
+	result, err := json.Marshal(Response{})
+	if err != nil {
+		log.WithError(err).Errorf("unable to marshal json")
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(result)
 }
@@ -29,7 +33,7 @@ type Response struct {
 // Run starting of the server
 func Run(cfg *config.Config) {
 	if cfg == nil {
-		panic("config is not defined")
+		log.Fatalf("config is not defined")
 	}
 	hb := api.New()
 	go hb.Run(cfg.Duration)
@@ -38,5 +42,6 @@ func Run(cfg *config.Config) {
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", s.report)
-	log.Fatal(http.ListenAndServe(":8100", mux))
+	log.Infof("server is started to %s", cfg.Address)
+	log.Fatal(http.ListenAndServe(cfg.Address, mux))
 }
