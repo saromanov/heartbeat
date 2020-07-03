@@ -9,6 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const apiPrefix = "/api"
+
 // Server defines server logic
 type Server struct {
 	check *api.Heartbeat
@@ -41,7 +43,7 @@ func Run(cfg *config.Config) {
 		check: hb,
 	}
 	mux := http.NewServeMux()
-	mux.HandleFunc("/status", s.report)
+	mux.HandleFunc(apiPrefix+"/status", s.report)
 	log.Infof("server is started to %s", cfg.Address)
 	log.Fatal(http.ListenAndServe(cfg.Address, mux))
 }
