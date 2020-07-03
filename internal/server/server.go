@@ -39,6 +39,9 @@ func Run(cfg *config.Config) {
 		log.Fatalf("config is not defined")
 	}
 	hb := api.New()
+	for _, c := range cfg.Checks {
+		hb.AddCheck(c.Name, c.URL)
+	}
 	go hb.Run(cfg.Duration)
 	s := &Server{
 		check: hb,
