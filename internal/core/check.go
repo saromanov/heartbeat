@@ -1,9 +1,9 @@
 package core
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -103,33 +103,39 @@ func (check *Check) AddScriptCheck(title, url string) {
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
 	items := make([]HTTPItem, len(check.httpCheck))
 	for _, value := range check.httpCheck {
-		stats, ok := check.stats[value.id]
-		if !ok {
-			check.stats[value.id] = Stats{
-				URL: value.target,
+		ctx, _ := context.WithTimeout(context.Background(), 2*time.Millisecond)
+		done := make(chan struct{})
+		go func() {
+			defer func() {
+				done <- struct{}{}
+			}()
+			stats, ok := check.stats[value.id]
+			if !ok {
+				check.stats[value.id] = Stats{
+					URL: value.target,
+				}
 			}
-		}
-		resp, err := check.checkItem(value.target)
-		if err != nil {
-			value.status = unhealthy
-			stats.Failed++
-			items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
-			continue
-		}
-		value.status = healthy
-		contents, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			stats.Failed++
-			items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "down"})
-			value.status = unhealthy
-		} else {
-			stats.Completed++
-			value.body = contents
-			items = append(items, HTTPItem{Name: value.title, Url: value.target, StatusCode: resp.Status, Status: "up"})
-		}
+			resp, err := check.checkItem(value.target)
+			if err != nil {
+				value.status = unhealthy
+				stats.Failed++
+				items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
+				return
+			}
+			value.status = healthy
+			check.stats[value.id] = stats
+			resp.Body.Close()
+		}()
 
-		check.stats[value.id] = stats
-		resp.Body.Close()
+		go func() {
+			select {
+			case <-done:
+				fmt.Println("Completed")
+			case <-ctx.Done():
+				fmt.Println("DONE")
+				return
+			}
+		}()
 	}
 
 	return &HTTPReport{Items: items}, nil
