@@ -108,7 +108,7 @@ func (check *Check) AddScriptCheck(title, url string) {
 // CheckHTTP method for checking health over registered http endpoints
 // Return struct of results
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
-	items := make([]HTTPItem, len(check.httpCheck))
+	failedItems := []HTTPItem{}
 	for _, value := range check.httpCheck {
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		done := make(chan struct{})
@@ -123,7 +123,7 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 			if err != nil {
 				value.status = unhealthy
 				stats.Failed++
-				items = append(items, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
+				failedItems = append(failedItems, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
 				return
 			}
 			stats.Completed++
@@ -145,7 +145,7 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 		}(value.id)
 	}
 
-	return &HTTPReport{Items: items}, nil
+	return &HTTPReport{Items: failedItems}, nil
 }
 
 // Report provides output info to console
