@@ -64,7 +64,16 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 	if err := c.Validate(); err != nil {
 		return err
 	}
+	c.fillInputData()
+	return nil
+}
+
+// fillInputData provides adding of incoming request
+func (check *Check) fillInputData(c HTTPCheck) {
 	id := len(check.httpCheck) + 1
+	check.stats[id] = Stats{
+		URL: c.URL,
+	}
 	newItem := Item{
 		id:        id,
 		title:     c.Title,
@@ -72,12 +81,8 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 		status:    healthy,
 		target:    c.URL,
 	}
-	check.stats[id] = Stats{
-		URL: c.URL,
-	}
 	check.httpCheckMap[c.Title] = newItem
 	check.httpCheck = append(check.httpCheck, newItem)
-	return nil
 }
 
 // ApplyCheck provides applying of the check
