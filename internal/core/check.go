@@ -62,9 +62,8 @@ func New() *Check {
 // AddHTTPCheck provides adding of HTTP check
 func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 	if err := c.Validate(); err != nil {
-		return err
+		return fmt.Errorf("unable to add http check: %v", err)
 	}
-	c.fillInputData()
 	return nil
 }
 
