@@ -69,9 +69,17 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 	if err := c.Validate(); err != nil {
 		return fmt.Errorf("unable to add http check: %v", err)
 	}
+	check.addHTTPCheck(c)
+	return nil
+}
+
+func (check *Check) addHTTPCheck(c HTTPCheck) {
 	c.id = len(check.httpChecks) + 1
 	check.httpChecks = append(check.httpChecks, c)
-	return nil
+	check.stats[c.id] = Stats{
+		URL:   c.URL,
+		Title: c.Title,
+	}
 }
 
 // ApplyCheck provides applying of the check
