@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/saromanov/heartbeat/internal/core"
+	"github.com/saromanov/heartbeat/internal/core/writer/stdout"
 )
 
 // Heartbeat defines main object
@@ -14,7 +15,7 @@ type Heartbeat struct {
 // New provides initialization of the heartbeat
 func New() *Heartbeat {
 	return &Heartbeat{
-		check: core.New(),
+		check: core.New(stdout.New()),
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/saromanov/heartbeat/internal/core/writer"
 )
 
 var (
@@ -28,6 +29,7 @@ type Check struct {
 	scriptCheck []Item
 	stats       map[int]Stats
 	clusters    map[string][]Node
+	writer      writer.Writer
 }
 
 // HTTPCheck defines check for http
@@ -48,7 +50,7 @@ func (h HTTPCheck) Validate() error {
 }
 
 // New provides initialization of the project
-func New() *Check {
+func New(w writer.Writer) *Check {
 	return &Check{
 		httpCheck:    []Item{},
 		scriptCheck:  []Item{},
@@ -56,6 +58,7 @@ func New() *Check {
 		httpCheckMap: map[string]Item{},
 		stats:        map[int]Stats{},
 		mu:           sync.RWMutex{},
+		writer:       w,
 	}
 }
 
