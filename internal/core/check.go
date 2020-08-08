@@ -22,7 +22,7 @@ var (
 type Check struct {
 	mu sync.RWMutex
 	// list of the http checks
-	httpCheck []Item
+	httpChecks []HTTPCheck
 	// dict of http checks
 	httpCheckMap map[string]Item
 	// list of the scipt checks
@@ -34,8 +34,10 @@ type Check struct {
 
 // HTTPCheck defines check for http
 type HTTPCheck struct {
-	Title string
-	URL   string
+	Title  string
+	URL    string
+	id     int
+	status string
 }
 
 // Validate provides validating of request
@@ -52,7 +54,7 @@ func (h HTTPCheck) Validate() error {
 // New provides initialization of the project
 func New(w writer.Writer) *Check {
 	return &Check{
-		httpCheck:    []Item{},
+		httpChecks:   []HTTPCheck{},
 		scriptCheck:  []Item{},
 		clusters:     map[string][]Node{},
 		httpCheckMap: map[string]Item{},
@@ -67,24 +69,9 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 	if err := c.Validate(); err != nil {
 		return fmt.Errorf("unable to add http check: %v", err)
 	}
+	c.id = len(check.httpChecks) + 1
+	check.httpChecks = append(check.httpChecks, c)
 	return nil
-}
-
-// fillInputData provides adding of incoming request
-func (check *Check) fillInputData(c HTTPCheck) {
-	id := len(check.httpCheck) + 1
-	check.stats[id] = Stats{
-		URL: c.URL,
-	}
-	newItem := Item{
-		id:        id,
-		title:     c.Title,
-		checkType: "http",
-		status:    healthy,
-		target:    c.URL,
-	}
-	check.httpCheckMap[c.Title] = newItem
-	check.httpCheck = append(check.httpCheck, newItem)
 }
 
 // ApplyCheck provides applying of the check
@@ -101,22 +88,11 @@ func (check *Check) ApplyCheck(title string) error {
 	return nil
 }
 
-// AddScriptCheck provides adding script check
-func (check *Check) AddScriptCheck(title, url string) {
-	newItem := Item{
-		title:     title,
-		checkType: "script",
-		status:    healthy,
-		target:    url,
-	}
-	check.httpCheck = append(check.httpCheck, newItem)
-}
-
 // CheckHTTP method for checking health over registered http endpoints
 // Return struct of results
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
 	failedItems := []HTTPItem{}
-	for _, value := range check.httpCheck {
+	for _, value := range check.httpChecks {
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		done := make(chan struct{})
 		go func(id int) {
@@ -126,11 +102,11 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 				done <- struct{}{}
 			}()
 			stats, _ := check.stats[value.id]
-			resp, err := check.checkItem(value.target)
+			resp, err := check.checkItem(value.URL)
 			if err != nil {
 				value.status = unhealthy
 				stats.Failed++
-				failedItems = append(failedItems, HTTPItem{Name: value.title, Url: value.target, Error: err.Error(), Status: "down"})
+				failedItems = append(failedItems, HTTPItem{Name: value.Title, Url: value.URL, Error: err.Error(), Status: "down"})
 				return
 			}
 			stats.Completed++
@@ -194,7 +170,7 @@ func (check *Check) CheckClusters() error {
 func (check *Check) Info() *Info {
 	return &Info{
 		NumClusters:   len(check.clusters),
-		NumHttpChecks: len(check.httpCheck),
+		NumHttpChecks: len(check.httpChecks),
 	}
 }
 

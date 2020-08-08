@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/saromanov/heartbeat/api"
@@ -39,6 +40,7 @@ func Run(cfg *config.Config) {
 		log.Fatalf("config is not defined")
 	}
 	hb := api.New()
+	fmt.Println("CHECK: ", cfg.Checks)
 	for _, c := range cfg.Checks {
 		hb.AddCheck(c.Name, c.URL)
 	}
