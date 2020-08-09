@@ -73,6 +73,7 @@ func (check *Check) AddHTTPCheck(c HTTPCheck) error {
 	return nil
 }
 
+// adding http check and init stats for check
 func (check *Check) addHTTPCheck(c HTTPCheck) {
 	c.id = len(check.httpChecks) + 1
 	check.httpChecks = append(check.httpChecks, c)
@@ -86,7 +87,7 @@ func (check *Check) addHTTPCheck(c HTTPCheck) {
 func (check *Check) ApplyCheck(title string) error {
 	item, ok := check.httpCheckMap[title]
 	if !ok {
-		return fmt.Errorf("Item %s is not found", title)
+		return fmt.Errorf("item %s is not found", title)
 	}
 
 	_, err := check.checkItem(item.target)
@@ -103,13 +104,13 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 	for _, value := range check.httpChecks {
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		done := make(chan struct{})
-		go func(id int) {
+		go func(chk HTTPCheck) {
 			check.mu.Lock()
 			defer func() {
 				check.mu.Unlock()
 				done <- struct{}{}
 			}()
-			stats, _ := check.stats[value.id]
+			stats, _ := check.stats[chk.id]
 			resp, err := check.checkItem(value.URL)
 			if err != nil {
 				value.status = unhealthy
@@ -118,10 +119,10 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 				return
 			}
 			stats.Completed++
-			check.stats[id] = stats
+			check.stats[chk.id] = stats
 			value.status = healthy
 			resp.Body.Close()
-		}(value.id)
+		}(value)
 
 		go func(id int) {
 			select {

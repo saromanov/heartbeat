@@ -31,7 +31,7 @@ func Unmarshal(path string) (*Config, error) {
 // Default return default config in the case of config path is not defined
 func Default() *Config {
 	return &Config{
-		Duration: 1 * time.Second,
+		Duration: 2 * time.Second,
 		Address:  ":8100",
 		Checks: []Check{
 			{
