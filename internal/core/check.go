@@ -165,10 +165,19 @@ func (check *Check) Stats() map[int]Stats {
 
 // Run provides checking
 func (check *Check) Run(d time.Duration) {
-	for {
-		time.Sleep(d)
-		check.Report()
-	}
+	ticker := time.NewTicker(1 * time.Second)
+	quit := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				check.Report()
+			case <-quit:
+				ticker.Stop()
+				return
+			}
+		}
+	}()
 }
 
 // CheckClusters provides checking all clusters
