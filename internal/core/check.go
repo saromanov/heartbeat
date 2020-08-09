@@ -110,16 +110,12 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 				check.mu.Unlock()
 				done <- struct{}{}
 			}()
-			stats, _ := check.stats[chk.id]
 			resp, err := check.checkItem(value.URL)
 			if err != nil {
 				value.status = unhealthy
-				stats.Failed++
 				failedItems = append(failedItems, HTTPItem{Name: value.Title, Url: value.URL, Error: err.Error(), Status: "down"})
 				return
 			}
-			stats.Completed++
-			check.stats[chk.id] = stats
 			value.status = healthy
 			resp.Body.Close()
 		}(value)
@@ -131,6 +127,9 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 				stats.Completed++
 				check.stats[id] = stats
 			case <-ctx.Done():
+				stats, _ := check.stats[id]
+				stats.Failed++
+				check.stats[id] = stats
 				fmt.Println("DONE")
 				return
 			}
