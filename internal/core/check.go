@@ -158,6 +158,8 @@ func (check *Check) Report() {
 
 // Stats returns statistics for all endpoints
 func (check *Check) Stats() map[int]Stats {
+	check.mu.RLock()
+	defer check.mu.RUnlock()
 	return check.stats
 }
 
