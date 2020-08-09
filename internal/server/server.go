@@ -13,19 +13,8 @@ const apiPrefix = "/api"
 
 // Server defines server logic
 type Server struct {
-	check *api.Heartbeat
-}
-
-func (s *Server) report(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	stats := s.check.Stats()
-	result, err := json.Marshal(stats)
-	if err != nil {
-		log.WithError(err).Errorf("unable to marshal json")
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(result)
+	check  *api.Heartbeat
+	logger *log.Logger
 }
 
 // Response provides writing of response from endpoint
@@ -33,10 +22,30 @@ type Response struct {
 	URL string `json:"url"`
 }
 
+func (s *Server) report(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	stats := s.check.Stats()
+	result, err := json.Marshal(stats)
+	if err != nil {
+		s.logger.WithError(err).Errorf("unable to marshal json")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(result)
+}
+
+func initLogger() *log.Logger {
+	l := log.New()
+	l.SetFormatter(&log.JSONFormatter{})
+	l.SetLevel(log.InfoLevel)
+	return l
+}
+
 // Run starting of the server
 func Run(cfg *config.Config) {
+	logger := initLogger()
 	if cfg == nil {
-		log.Fatalf("config is not defined")
+		logger.Fatalf("config is not defined")
 	}
 	hb := api.New()
 	for _, c := range cfg.Checks {
@@ -44,10 +53,11 @@ func Run(cfg *config.Config) {
 	}
 	go hb.Run(cfg.Duration)
 	s := &Server{
-		check: hb,
+		check:  hb,
+		logger: logger,
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc(apiPrefix+"/status", s.report)
-	log.Infof("server is started to %s", cfg.Address)
-	log.Fatal(http.ListenAndServe(cfg.Address, mux))
+	logger.Infof("server is started to %s", cfg.Address)
+	logger.Fatal(http.ListenAndServe(cfg.Address, mux))
 }
