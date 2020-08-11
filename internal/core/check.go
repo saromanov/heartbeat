@@ -90,9 +90,8 @@ func (check *Check) ApplyCheck(title string) error {
 		return fmt.Errorf("item %s is not found", title)
 	}
 
-	_, err := check.checkItem(item.target)
-	if err != nil {
-		return err
+	if _, err := check.checkItem(item.target); err != nil {
+		return fmt.Errorf("unable to check item: %v", err)
 	}
 	return nil
 }
@@ -123,14 +122,9 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 		go func(id int) {
 			select {
 			case <-done:
-				stats, _ := check.stats[id]
-				stats.Completed++
-				check.stats[id] = stats
+				check.IncCompleted(id)
 			case <-ctx.Done():
-				stats, _ := check.stats[id]
-				stats.Failed++
-				check.stats[id] = stats
-				fmt.Println("DONE")
+				check.IncFailed(id)
 				return
 			}
 		}(value.id)
@@ -161,6 +155,24 @@ func (check *Check) Stats() map[int]Stats {
 	check.mu.RLock()
 	defer check.mu.RUnlock()
 	return check.stats
+}
+
+// IncCompleted provides increasing of completed requests
+func (check *Check) IncCompleted(id int) {
+	check.mu.Lock()
+	defer check.mu.Unlock()
+	stats, _ := check.stats[id]
+	stats.Completed++
+	check.stats[id] = stats
+}
+
+// IncFailed provides increasing of failed requests
+func (check *Check) IncFailed(id int) {
+	check.mu.Lock()
+	defer check.mu.Unlock()
+	stats, _ := check.stats[id]
+	stats.Failed++
+	check.stats[id] = stats
 }
 
 // Run provides checking
