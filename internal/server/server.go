@@ -44,6 +44,19 @@ func (s *Server) addHealthCheck(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if h.Title == "" {
+		http.Error(w, "title is not defined", http.StatusBadRequest)
+		return
+	}
+	if h.URL == "" {
+		http.Error(w, "url is not defined", http.StatusBadRequest)
+		return
+	}
+
+	if err := s.check.AddCheck(h.Title, h.URL); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func initLogger() *log.Logger {
@@ -70,7 +83,7 @@ func Run(cfg *config.Config) {
 	}
 	r := mux.NewRouter()
 	r.HandleFunc(apiPrefix+"/status", s.report)
-	r.HandleFunc(apiPrefix+"/check", s.addHealthCheck).Methods("POST")
+	r.HandleFunc(apiPrefix+"/checks", s.addHealthCheck).Methods("POST")
 	logger.Infof("server is started to %s", cfg.Address)
 	logger.Fatal(http.ListenAndServe(cfg.Address, r))
 }
