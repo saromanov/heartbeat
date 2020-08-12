@@ -78,6 +78,7 @@ func (check *Check) addHTTPCheck(c HTTPCheck) {
 	c.id = len(check.httpChecks) + 1
 	check.httpChecks = append(check.httpChecks, c)
 	check.stats[c.id] = Stats{
+		ID:    fmt.Sprintf("%d", c.id),
 		URL:   c.URL,
 		Title: c.Title,
 	}
