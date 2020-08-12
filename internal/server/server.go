@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/saromanov/heartbeat/api"
+	"github.com/saromanov/heartbeat/internal/core/server/model"
 	"github.com/saromanov/heartbeat/internal/config"
 	log "github.com/sirupsen/logrus"
 )
@@ -34,6 +35,16 @@ func (s *Server) report(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
+func (s *Server) addHealthCheck(w http.ResponseWriter, r *http.Request) {
+	var h model.HealthCheck
+	
+    err := json.NewDecoder(r.Body).Decode(&h)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+}
+
 func initLogger() *log.Logger {
 	l := log.New()
 	l.SetFormatter(&log.JSONFormatter{})
@@ -58,6 +69,7 @@ func Run(cfg *config.Config) {
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc(apiPrefix+"/status", s.report)
+	mux.HandleFunc(apiPrefix+"/check", s.addHealthCheck).Methods("POST")
 	logger.Infof("server is started to %s", cfg.Address)
 	logger.Fatal(http.ListenAndServe(cfg.Address, mux))
 }
