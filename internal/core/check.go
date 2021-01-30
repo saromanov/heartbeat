@@ -30,6 +30,7 @@ type Check struct {
 	stats       map[int]Stats
 	clusters    map[string][]Node
 	writer      writer.Writer
+	interval    time.Duration
 }
 
 // HTTPCheck defines check for http
@@ -61,6 +62,7 @@ func New(w writer.Writer) *Check {
 		stats:        map[int]Stats{},
 		mu:           sync.RWMutex{},
 		writer:       w,
+		interval:     5 * time.Second,
 	}
 }
 
@@ -100,7 +102,6 @@ func (check *Check) ApplyCheck(title string) error {
 // CheckHTTP method for checking health over registered http endpoints
 // Return struct of results
 func (check *Check) CheckHTTP() (*HTTPReport, error) {
-	failedItems := []HTTPItem{}
 	for _, value := range check.httpChecks {
 		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 		done := make(chan struct{})
@@ -113,7 +114,6 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 			resp, err := check.checkItem(value.URL)
 			if err != nil {
 				value.status = unhealthy
-				failedItems = append(failedItems, HTTPItem{Name: value.Title, Url: value.URL, Error: err.Error(), Status: "down"})
 				return
 			}
 			value.status = healthy
@@ -131,7 +131,7 @@ func (check *Check) CheckHTTP() (*HTTPReport, error) {
 		}(value.id)
 	}
 
-	return &HTTPReport{Items: failedItems}, nil
+	return &HTTPReport{}, nil
 }
 
 // Report provides output info to console
@@ -178,7 +178,7 @@ func (check *Check) IncFailed(id int) {
 
 // Run provides checking
 func (check *Check) Run(d time.Duration) {
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(check.interval)
 	quit := make(chan struct{})
 	go func() {
 		for {
